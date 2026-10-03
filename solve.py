@@ -237,7 +237,7 @@ def solve_world(
     max_hops: int | None = DEFAULT_MAX_HOPS,
     budget: float = ot.INITIAL_TOKENS,
     fuel_correction: bool = True,
-    method: str = "bnb",
+    method: str = "frontier",
 ) -> dict:
     t0 = time.perf_counter()
     tables = WorldTables(instance)
@@ -286,7 +286,7 @@ def solve_all(
     metric: str = "time",
     max_hops: int | None = DEFAULT_MAX_HOPS,
     fuel_correction: bool = True,
-    method: str = "bnb",
+    method: str = "frontier",
 ) -> tuple[dict, dict]:
     instances = ot.generate_instances(seed)
     plan: dict = {}
@@ -409,8 +409,9 @@ def main() -> None:
     p.add_argument("--max-hops", type=int, default=DEFAULT_MAX_HOPS,
                    help=f"cap edges per route; hops = checkpoints + 1 "
                         f"(default: {DEFAULT_MAX_HOPS}, i.e. {DEFAULT_MAX_CHECKPOINTS} checkpoints)")
-    p.add_argument("--knapsack", choices=("bnb", "dp"), default="bnb",
-                   help="exact branch and bound on real costs, or the gridded DP")
+    p.add_argument("--knapsack", choices=("frontier", "bnb", "dp"), default="frontier",
+                   help="frontier: exact fuel/quality scan (default); "
+                        "bnb/dp: priced-fuel solvers, kept for cross-checking")
     p.add_argument("--no-fuel-correction", dest="fuel_correction",
                    action="store_false", default=True,
                    help="skip the fuel-efficiency multiplier optimization")
@@ -465,7 +466,7 @@ def main() -> None:
             n_cp_used = sum(1 for c in r["chosen"] if c.checkpoints)
             print(f"    selected: {used}  with-checkpoints={n_cp_used}")
             print(f"    candidates {r['candidates_raw']} -> {r['candidates_kept']} after Pareto")
-            print(f"    lambda trace: {[f'{x:.3e}' for x in r['lambda_trace']]}")
+            print(f"    frontier/lambda trace: {[f'{x:.3e}' for x in r['lambda_trace']]}")
             print(f"    timing: geometry={tm['geometry']:.2f}s "
                   f"candidates={tm['candidates']:.2f}s knapsack={tm['knapsack']:.2f}s")
 

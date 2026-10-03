@@ -25,6 +25,7 @@ never an artifact of the linearization.
 
 from __future__ import annotations
 
+import math
 import time
 from dataclasses import dataclass
 
@@ -159,6 +160,7 @@ def solve_bnb(
     lam: float = 0.0,
     time_limit: float = 20.0,
     warm_start: list[Candidate] | None = None,
+    fuel_cap: float = math.inf,
 ) -> tuple[list[Candidate], bool, int]:
     """Exact branch and bound on real-valued token costs -- no cost grid.
 
@@ -202,7 +204,8 @@ def solve_bnb(
     best_sel: list[Candidate] = []
     if warm_start:
         wv = sum(c.value - lam * c.fuel for c in warm_start)
-        if sum(c.tokens for c in warm_start) <= budget_tokens + 1e-9:
+        if (sum(c.tokens for c in warm_start) <= budget_tokens + 1e-9
+                and sum(c.fuel for c in warm_start) <= fuel_cap + 1e-9):
             best_val, best_sel = wv, list(warm_start)
 
     t0 = time.perf_counter()
@@ -210,7 +213,7 @@ def solve_bnb(
     timed_out = False
     stack: list[Candidate] = []
 
-    def recurse(gi: int, spent: float, value: float) -> None:
+    def recurse(gi: int, spent: float, fuel: float, value: float) -> None:
         nonlocal best_val, best_sel, nodes, timed_out
         if timed_out:
             return
@@ -232,15 +235,16 @@ def solve_bnb(
         for c in gs[gi]:
             if (c.value - lam * c.fuel) <= 0.0:
                 continue  # costs budget, reduces value: never in an optimum
-            if c.tokens <= rem + 1e-9:
+            if c.tokens <= rem + 1e-9 and fuel + c.fuel <= fuel_cap + 1e-9:
                 stack.append(c)
-                recurse(gi + 1, spent + c.tokens, value + (c.value - lam * c.fuel))
+                recurse(gi + 1, spent + c.tokens, fuel + c.fuel,
+                        value + (c.value - lam * c.fuel))
                 stack.pop()
                 if timed_out:
                     return
-        recurse(gi + 1, spent, value)  # skip this group
+        recurse(gi + 1, spent, fuel, value)  # skip this group
 
-    recurse(0, 0.0, 0.0)
+    recurse(0, 0.0, 0.0, 0.0)
     return best_sel, (not timed_out), nodes
 
 
@@ -263,6 +267,65 @@ def true_objective(chosen: list[Candidate], budget_tokens: float = 1000.0) -> di
         "budget_valid": valid,
         "n_deliveries": len(chosen),
     }
+
+
+def solve_frontier(
+    groups: list[list[Candidate]],
+    budget_tokens: float = 1000.0,
+    max_steps: int = 400,
+    time_limit: float = 20.0,
+) -> tuple[list[Candidate], int]:
+    """Exact optimization of the real score, by walking the fuel/quality frontier.
+
+    The score ``100 * Q * (1 - 0.00015 * F)`` is a product of two things we choose, so no
+    single additive knapsack represents it. Make fuel an explicit dimension instead.
+    Define
+
+        g(Fbar) = max Q  subject to  tokens <= budget  and  fuel <= Fbar
+
+    a non-decreasing step function whose breakpoints are the (fuel, quality) Pareto
+    frontier. The optimum sits on one of them: for any plan P,
+    ``score(P) <= 100 * g(F(P)) * (1 - 0.00015 * F(P))``, and the witness plan at
+    breakpoint F(P) has fuel <= F(P) and quality >= Q(P), so it scores at least as well.
+
+    So we enumerate the breakpoints from the top -- solve uncapped, score the winner
+    exactly, then re-solve with the cap just under its true fuel to force strictly less,
+    and repeat. Each step is a branch and bound on real-valued costs, so fuel is only
+    ever compared, never binned.
+
+    This is the fix for the trap a gridded 2D table falls into. Rounding each delivery's
+    fuel up onto a 0.1-token grid inflates a total by up to ~1 token, which is enough to
+    reject a genuinely feasible plan and lose a whole delivery (observed: a real
+    999.75-token plan binning to 1000.10). Here nothing is rounded.
+
+    Returns (selection, number of frontier breakpoints examined).
+    """
+    best_sel: list[Candidate] = []
+    best_score = -1.0
+    cap = math.inf
+    warm: list[Candidate] | None = None
+    t0 = time.perf_counter()
+    steps = 0
+
+    for _ in range(max_steps):
+        if time.perf_counter() - t0 > time_limit:
+            break
+        sel, _, _ = solve_bnb(
+            groups, budget_tokens, 0.0, warm_start=warm, fuel_cap=cap
+        )
+        if not sel:
+            break
+        steps += 1
+        info = true_objective(sel, budget_tokens)
+        if info["score"] > best_score:
+            best_score, best_sel = info["score"], sel
+        fuel = info["fuel_tokens"]
+        if fuel <= 0.0:
+            break
+        cap = fuel - 1e-7
+        warm = None  # a lower cap makes the previous plan infeasible as a warm start
+
+    return best_sel, steps
 
 
 def _choose(
@@ -303,7 +366,7 @@ def solve(
     max_iters: int = 8,
     tol: float = 1e-9,
     fuel_correction: bool = True,
-    method: str = "bnb",
+    method: str = "frontier",
 ) -> tuple[list[Candidate], dict, list[float]]:
     """Optimize the true per-world score, including the fuel-efficiency multiplier.
 
@@ -328,6 +391,11 @@ def solve(
     so the result is never worse than the uncorrected plan and never an artifact of the
     linearization. Returns (selection, score dict, lambda trace).
     """
+    if method == "frontier":
+        # Exact in both respects; the fuel-pricing machinery below is not used.
+        sel, steps = solve_frontier(groups, budget_tokens)
+        return sel, true_objective(sel, budget_tokens), [float(steps)]
+
     if not fuel_correction:
         sel = _choose(groups, budget_tokens, 0.0, method)
         return sel, true_objective(sel, budget_tokens), [0.0]
