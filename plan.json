@@ -1,153 +1,19 @@
 {
   "disk": [
     {
-      "endpoint": 9,
-      "vehicle": "truck",
-      "checkpoints": []
-    },
-    {
-      "endpoint": 12,
-      "vehicle": "truck",
-      "checkpoints": []
-    },
-    {
-      "endpoint": 14,
-      "vehicle": "truck",
-      "checkpoints": []
-    },
-    {
-      "endpoint": 23,
-      "vehicle": "truck",
-      "checkpoints": []
-    },
-    {
-      "endpoint": 32,
-      "vehicle": "truck",
-      "checkpoints": [
-        48
-      ]
-    },
-    {
-      "endpoint": 36,
-      "vehicle": "truck",
-      "checkpoints": []
-    },
-    {
-      "endpoint": 41,
-      "vehicle": "truck",
-      "checkpoints": []
-    },
-    {
-      "endpoint": 42,
-      "vehicle": "truck",
-      "checkpoints": []
-    }
-  ],
-  "sphere": [
-    {
-      "endpoint": 0,
-      "vehicle": "truck",
-      "checkpoints": []
-    },
-    {
       "endpoint": 2,
       "vehicle": "truck",
       "checkpoints": [
-        11
+        39
       ]
     },
     {
-      "endpoint": 6,
-      "vehicle": "truck",
-      "checkpoints": [
-        12
-      ]
-    },
-    {
-      "endpoint": 7,
+      "endpoint": 11,
       "vehicle": "truck",
       "checkpoints": []
     },
     {
-      "endpoint": 17,
-      "vehicle": "truck",
-      "checkpoints": []
-    },
-    {
-      "endpoint": 32,
-      "vehicle": "truck",
-      "checkpoints": [
-        26
-      ]
-    },
-    {
-      "endpoint": 36,
-      "vehicle": "truck",
-      "checkpoints": []
-    },
-    {
-      "endpoint": 40,
-      "vehicle": "truck",
-      "checkpoints": []
-    }
-  ],
-  "torus": [
-    {
-      "endpoint": 4,
-      "vehicle": "truck",
-      "checkpoints": []
-    },
-    {
-      "endpoint": 6,
-      "vehicle": "truck",
-      "checkpoints": []
-    },
-    {
-      "endpoint": 7,
-      "vehicle": "truck",
-      "checkpoints": []
-    },
-    {
-      "endpoint": 14,
-      "vehicle": "truck",
-      "checkpoints": []
-    },
-    {
-      "endpoint": 27,
-      "vehicle": "truck",
-      "checkpoints": []
-    },
-    {
-      "endpoint": 31,
-      "vehicle": "truck",
-      "checkpoints": []
-    },
-    {
-      "endpoint": 36,
-      "vehicle": "truck",
-      "checkpoints": []
-    },
-    {
-      "endpoint": 37,
-      "vehicle": "truck",
-      "checkpoints": []
-    },
-    {
-      "endpoint": 47,
-      "vehicle": "truck",
-      "checkpoints": []
-    }
-  ],
-  "klein": [
-    {
-      "endpoint": 6,
-      "vehicle": "truck",
-      "checkpoints": [
-        36
-      ]
-    },
-    {
-      "endpoint": 8,
+      "endpoint": 15,
       "vehicle": "truck",
       "checkpoints": []
     },
@@ -157,10 +23,147 @@
       "checkpoints": []
     },
     {
-      "endpoint": 22,
+      "endpoint": 23,
+      "vehicle": "truck",
+      "checkpoints": []
+    },
+    {
+      "endpoint": 41,
+      "vehicle": "truck",
+      "checkpoints": []
+    },
+    {
+      "endpoint": 43,
+      "vehicle": "truck",
+      "checkpoints": []
+    },
+    {
+      "endpoint": 45,
       "vehicle": "truck",
       "checkpoints": [
-        3
+        9
+      ]
+    }
+  ],
+  "sphere": [
+    {
+      "endpoint": 1,
+      "vehicle": "truck",
+      "checkpoints": [
+        23
+      ]
+    },
+    {
+      "endpoint": 2,
+      "vehicle": "truck",
+      "checkpoints": []
+    },
+    {
+      "endpoint": 12,
+      "vehicle": "truck",
+      "checkpoints": [
+        35
+      ]
+    },
+    {
+      "endpoint": 37,
+      "vehicle": "truck",
+      "checkpoints": []
+    },
+    {
+      "endpoint": 41,
+      "vehicle": "truck",
+      "checkpoints": []
+    },
+    {
+      "endpoint": 45,
+      "vehicle": "truck",
+      "checkpoints": []
+    },
+    {
+      "endpoint": 47,
+      "vehicle": "truck",
+      "checkpoints": []
+    },
+    {
+      "endpoint": 49,
+      "vehicle": "truck",
+      "checkpoints": [
+        44
+      ]
+    }
+  ],
+  "torus": [
+    {
+      "endpoint": 1,
+      "vehicle": "truck",
+      "checkpoints": []
+    },
+    {
+      "endpoint": 3,
+      "vehicle": "truck",
+      "checkpoints": []
+    },
+    {
+      "endpoint": 12,
+      "vehicle": "truck",
+      "checkpoints": [
+        21
+      ]
+    },
+    {
+      "endpoint": 15,
+      "vehicle": "truck",
+      "checkpoints": []
+    },
+    {
+      "endpoint": 34,
+      "vehicle": "truck",
+      "checkpoints": [
+        34
+      ]
+    },
+    {
+      "endpoint": 35,
+      "vehicle": "truck",
+      "checkpoints": []
+    },
+    {
+      "endpoint": 37,
+      "vehicle": "truck",
+      "checkpoints": []
+    },
+    {
+      "endpoint": 49,
+      "vehicle": "truck",
+      "checkpoints": [
+        21
+      ]
+    }
+  ],
+  "klein": [
+    {
+      "endpoint": 0,
+      "vehicle": "truck",
+      "checkpoints": []
+    },
+    {
+      "endpoint": 11,
+      "vehicle": "truck",
+      "checkpoints": []
+    },
+    {
+      "endpoint": 12,
+      "vehicle": "truck",
+      "checkpoints": [
+        43
+      ]
+    },
+    {
+      "endpoint": 18,
+      "vehicle": "truck",
+      "checkpoints": [
+        46
       ]
     },
     {
@@ -169,23 +172,21 @@
       "checkpoints": []
     },
     {
-      "endpoint": 44,
+      "endpoint": 37,
       "vehicle": "truck",
       "checkpoints": []
     },
     {
-      "endpoint": 46,
+      "endpoint": 38,
       "vehicle": "truck",
       "checkpoints": [
-        37
+        15
       ]
     },
     {
-      "endpoint": 48,
+      "endpoint": 40,
       "vehicle": "truck",
-      "checkpoints": [
-        8
-      ]
+      "checkpoints": []
     }
   ]
 }

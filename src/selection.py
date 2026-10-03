@@ -8,7 +8,7 @@ problem a multiple-choice knapsack (MCKP) against the 1000-token budget.
 The score is *not* a pure knapsack, though. For one world,
 
     C = 100 * Q * [0.85 + 0.15 * (1 - min(F/1000, 1))]
-      = 100 * Q * (1 - 0.00015 * F)        for F <= 1000
+      = 100 * Q * (1 - 0.00015 * F)                 for F <= 1000
 
 where Q = sum_j w_j q_j with w_j = demand_j / sum(demand), and F is the total *fuel*
 spend (dispatch excluded). The product Q*F is bilinear, so the objective couples every
@@ -27,36 +27,12 @@ from __future__ import annotations
 
 import math
 import time
-from dataclasses import dataclass
 
 import numpy as np
 
-# DP granularity: 1 unit = 1/COST_SCALE tokens.
-#
-# Costs must be rounded UP onto the grid, otherwise the DP can return a plan whose true
-# cost exceeds the budget. But rounding up also inflates every total, which can push a
-# genuinely feasible plan over the budget and cost a whole delivery: with a 0.01-token
-# grid, a plan truly costing 199.98 of 200 rounds to 200.01 and gets rejected. The error
-# is bounded by n_chosen / COST_SCALE tokens, so at 1/1000 and ~10 deliveries the worst
-# case is 0.01 tokens of lost budget -- far below the ~100-token cost of any delivery.
-COST_SCALE = 1000
+from include.constants import COST_SCALE, LAMBDA_SWEEP, MULTIPLIER_SLOPE
+from include.types import Candidate
 
-
-@dataclass(frozen=True)
-class Candidate:
-    """One feasible way to serve one endpoint."""
-
-    endpoint: int
-    vehicle: str
-    checkpoints: tuple[int, ...]
-    load_kg: float
-    omit_load: bool  # True when load == demand, so the plan can omit the field
-    value: float  # w_j * q_j, i.e. this endpoint's contribution to Q
-    quality: float  # q_j
-    tokens: float  # dispatch + fuel
-    fuel: float  # fuel only; drives the efficiency multiplier
-    distance_m: float
-    travel_days: float
 
 
 def pareto_filter(cands: list[Candidate]) -> list[Candidate]:
@@ -356,8 +332,6 @@ def _choose(
     raise ValueError(f"Unknown knapsack method: {method}")
 
 
-# Multiples of the converged shadow price to probe around the fixed point.
-LAMBDA_SWEEP = (0.0, 0.25, 0.5, 0.75, 1.0, 1.25, 1.5, 2.0, 3.0, 5.0)
 
 
 def solve(
@@ -423,8 +397,8 @@ def solve(
     for _ in range(max_iters):
         trace.append(lam)
         info = probe(lam)
-        denom = 1.0 - 0.00015 * min(info["fuel_tokens"], budget_tokens)
-        new_lam = 0.00015 * info["coverage_quality"] / max(denom, 1e-9)
+        denom = 1.0 - MULTIPLIER_SLOPE * min(info["fuel_tokens"], budget_tokens)
+        new_lam = MULTIPLIER_SLOPE * info["coverage_quality"] / max(denom, 1e-9)
         if abs(new_lam - lam) <= tol or round(new_lam, 12) in seen:
             break
         seen.add(round(new_lam, 12))
