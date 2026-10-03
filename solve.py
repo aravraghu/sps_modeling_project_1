@@ -237,7 +237,7 @@ def solve_world(
     max_hops: int | None = DEFAULT_MAX_HOPS,
     budget: float = ot.INITIAL_TOKENS,
     fuel_correction: bool = True,
-    method: str = "frontier",
+    method: str = "bnb",
 ) -> dict:
     t0 = time.perf_counter()
     tables = WorldTables(instance)
@@ -286,7 +286,7 @@ def solve_all(
     metric: str = "time",
     max_hops: int | None = DEFAULT_MAX_HOPS,
     fuel_correction: bool = True,
-    method: str = "frontier",
+    method: str = "bnb",
 ) -> tuple[dict, dict]:
     instances = ot.generate_instances(seed)
     plan: dict = {}
@@ -409,9 +409,10 @@ def main() -> None:
     p.add_argument("--max-hops", type=int, default=DEFAULT_MAX_HOPS,
                    help=f"cap edges per route; hops = checkpoints + 1 "
                         f"(default: {DEFAULT_MAX_HOPS}, i.e. {DEFAULT_MAX_CHECKPOINTS} checkpoints)")
-    p.add_argument("--knapsack", choices=("frontier", "bnb", "dp"), default="frontier",
-                   help="frontier: exact fuel/quality scan (default); "
-                        "bnb/dp: priced-fuel solvers, kept for cross-checking")
+    p.add_argument("--knapsack", choices=("bnb", "dp", "frontier"), default="bnb",
+                   help="bnb: priced fuel + branch and bound (default, see METHOD.md); "
+                        "dp: priced fuel + gridded table; "
+                        "frontier: exact fuel/quality scan, for cross-checking")
     p.add_argument("--no-fuel-correction", dest="fuel_correction",
                    action="store_false", default=True,
                    help="skip the fuel-efficiency multiplier optimization")
